@@ -2,9 +2,8 @@
     <p>
         <span class="user">~/irfans-terminal $ </span>
         <span
-            v-bind="$attrs"
+            v-bind:attrs="$attrs"
             class="command"
-            id="command"
             ref="command"
             placeholder="Type your command or run: help"
             :contenteditable="!readOnly"
@@ -12,12 +11,12 @@
             @keydown.enter.prevent="emitSubmit"
             @keydown.up.prevent="emitToggle(-1)"
             @keydown.down.prevent="emitToggle(1)"
+            v-text="readOnly ? value.command : ''"
         >
-            {{ value.command }}
         </span>
     </p>
     <code>
-        <pre name="output" class="output" id="output">{{ value.output }}</pre>
+        <pre name="output" class="output" id="output">{{ value?.output ?? '' }}</pre>
     </code>
 </template>
 
@@ -33,11 +32,19 @@ export default {
         if (!this.readOnly) this.$refs.command.focus()
     },
 
+    data() {
+        return {
+            command: this.readOnly ? this.value?.command : ''
+        }
+    },
+
     emits: ['submit', 'clear', 'toggle', 'reset', 'input'],
+
+    expose: ['resetCommand', 'updateCommand'],
+
     methods: {
         emitValue(e) {
             this.command = e.target.innerText
-            this.$emit('input', { ...this.value, command: this.command })
         },
 
         emitSubmit() {
@@ -50,6 +57,16 @@ export default {
         emitToggle(index) {
             if (this.readOnly) return
             this.$emit('toggle', index)
+        },
+
+        updateCommand({ command }) {
+            this.command = command
+            this.$refs.command.innerText = command
+        },
+
+        resetCommand() {
+            this.command = ''
+            this.$refs.command.innerText = ''
         }
     }
 }

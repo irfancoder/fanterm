@@ -1,19 +1,10 @@
 <template>
     <div id="terminal" class="terminal">
         <div v-for="(history, index) in histories" :key="index">
-            <command-line :value="history" :readOnly="true"></command-line>
+            <command-line :value="history" :readOnly="true" :id="`command_${index}`"></command-line>
         </div>
 
-        <command-line
-            ref="current"
-            v-model="current"
-            :value="current"
-            @input="update"
-            @submit="submitCommand"
-            @clear="clearHistory"
-            @toggle="toggleCommand"
-            @reset="resetCurrentCommand"
-        ></command-line>
+        <command-line ref="current" @submit="submitCommand" @clear="clearHistory" @toggle="toggleCommand" @reset="resetCurrentCommand"></command-line>
     </div>
 </template>
 
@@ -52,7 +43,7 @@ export default {
     },
     methods: {
         update(payload) {
-            this.current = payload
+            this.$refs.current.updateCommand(payload)
         },
 
         run(command) {
@@ -72,7 +63,7 @@ export default {
 
         submitCommand({ command }) {
             this.run(command)
-            this.scroll()
+            // this.scroll()
             // socket.emit('request', {
             //     command: this.current.command,
             //     meta: {
@@ -90,7 +81,7 @@ export default {
 
         toggleCommand(value) {
             this.index += value
-
+            console.log(this.index)
             if (this.index < 0) {
                 this.index -= value
             } else if (this.index >= this.histories.length + 1) {
@@ -99,6 +90,7 @@ export default {
             } else if (this.index >= this.histories.length) {
                 this.resetCurrentCommand()
             } else {
+                console.log(this.histories[this.index])
                 this.update({ command: this.histories[this.index].command, output: '' })
             }
         },
@@ -112,6 +104,7 @@ export default {
                 command: '',
                 output: ''
             }
+            this.$refs.current.resetCommand()
         }
     }
 }
